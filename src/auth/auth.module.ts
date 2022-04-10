@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { schemaNames } from 'src/configs/schema-names.config';
+import { schemaNames } from '../configs/schema-names.config';
 import { AuthController } from './auth.controller';
 import { AuthSchema } from './auth.model';
 

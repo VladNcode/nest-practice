@@ -2,7 +2,7 @@ import { Model } from 'mongoose';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ReviewDocument, ReviewModel } from './review.model';
-import { schemaNames } from 'src/configs/schema-names.config';
+import { schemaNames } from '../configs/schema-names.config';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { DeleteResult } from 'mongodb';
 

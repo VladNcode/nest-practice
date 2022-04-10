@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose from 'mongoose';
 import { Document } from 'mongoose';
-import { schemaNames } from 'src/configs/schema-names.config';
+import { schemaNames } from '../configs/schema-names.config';
 
 export type ReviewDocument = ReviewModel & Document;
 
