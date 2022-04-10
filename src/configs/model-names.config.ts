@@ -1,4 +1,4 @@
-export const schemaNames = {
+export const modelNames = {
 	review: 'Review',
 	auth: 'Auth',
 	topPage: 'TopPage',

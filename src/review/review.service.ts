@@ -2,14 +2,14 @@ import { Model } from 'mongoose';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ReviewDocument, ReviewModel } from './review.model';
-import { schemaNames } from '../configs/schema-names.config';
+import { modelNames } from '../configs/model-names.config';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { DeleteResult } from 'mongodb';
 
 @Injectable()
 export class ReviewService {
 	constructor(
-		@InjectModel(schemaNames.review) private readonly reviewModel: Model<ReviewDocument>,
+		@InjectModel(modelNames.review) private readonly reviewModel: Model<ReviewDocument>,
 	) {}
 
 	async create(dto: CreateReviewDto): Promise<ReviewModel> {

@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose from 'mongoose';
 import { Document } from 'mongoose';
-import { schemaNames } from '../configs/schema-names.config';
+import { modelNames } from '../configs/model-names.config';
 
 export type ReviewDocument = ReviewModel & Document;
 
@@ -19,7 +19,7 @@ export class ReviewModel {
 	@Prop()
 	rating: number;
 
-	@Prop({ type: mongoose.Schema.Types.ObjectId, ref: schemaNames.review })
+	@Prop({ type: mongoose.Schema.Types.ObjectId, ref: modelNames.review })
 	productId: mongoose.Schema.Types.ObjectId;
 }
 

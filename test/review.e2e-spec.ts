@@ -2,9 +2,9 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
-import { CreateReviewDto } from 'src/review/dto/create-review.dto';
 import mongoose from 'mongoose';
 import { REVIEW_NOT_FOUND } from '../src/review/review.constraints';
+import { CreateReviewDto } from '../src/review/dto/create-review.dto';
 
 const productId = new mongoose.Types.ObjectId().toHexString();
 
