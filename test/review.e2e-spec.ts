@@ -29,6 +29,24 @@ describe('AppController (e2e)', () => {
 		await app.init();
 	});
 
+	it('/review/create (POST) - fail', async () => {
+		const {
+			body: { message },
+		} = await request(app.getHttpServer())
+			.post('/review/create')
+			.send({
+				...testDto,
+				description: 5,
+				rating: 6,
+			})
+			.expect(400);
+
+		expect(message).toMatchObject([
+			'description must be a string',
+			'rating must not be greater than 5',
+		]);
+	});
+
 	it('/review/create (POST) - success', async () => {
 		const { body } = await request(app.getHttpServer())
 			.post('/review/create')
