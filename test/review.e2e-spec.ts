@@ -19,6 +19,7 @@ const testDto: CreateReviewDto = {
 describe('AppController (e2e)', () => {
 	let app: INestApplication;
 	let createdId: string;
+	let token: string;
 
 	beforeEach(async () => {
 		const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -27,6 +28,13 @@ describe('AppController (e2e)', () => {
 
 		app = moduleFixture.createNestApplication();
 		await app.init();
+
+		const { body } = await request(app.getHttpServer())
+			.post('/auth/login/')
+			.send({ login: 'test@test.com', password: 'password' })
+			.expect(200);
+
+		token = body.access_token;
 	});
 
 	it('/review/create (POST) - fail', async () => {
@@ -74,7 +82,10 @@ describe('AppController (e2e)', () => {
 	});
 
 	it('/review/byProduct/:productId (DELETE) - success', async () => {
-		await request(app.getHttpServer()).delete(`/review/byProduct/${productId}`).expect(200);
+		await request(app.getHttpServer())
+			.delete(`/review/byProduct/${productId}`)
+			.set('Authorization', `Bearer ${token}`)
+			.expect(200);
 	});
 
 	it('/review/byProduct/:productId (DELETE) - fail', async () => {
@@ -82,6 +93,7 @@ describe('AppController (e2e)', () => {
 			body: { message },
 		} = await request(app.getHttpServer())
 			.delete(`/review/byProduct/${new mongoose.Types.ObjectId().toHexString()}`)
+			.set('Authorization', `Bearer ${token}`)
 			.expect(404);
 
 		expect(message).toEqual(REVIEW_NOT_FOUND);
@@ -94,7 +106,10 @@ describe('AppController (e2e)', () => {
 			.expect(201);
 
 		createdId = body._id;
-		await request(app.getHttpServer()).delete(`/review/${createdId}`).expect(200);
+		await request(app.getHttpServer())
+			.delete(`/review/${createdId}`)
+			.set('Authorization', `Bearer ${token}`)
+			.expect(200);
 	});
 
 	it('/review/:id (DELETE) - fail', async () => {
@@ -102,6 +117,7 @@ describe('AppController (e2e)', () => {
 			body: { message },
 		} = await request(app.getHttpServer())
 			.delete(`/review/${new mongoose.Types.ObjectId().toHexString()}`)
+			.set('Authorization', `Bearer ${token}`)
 			.expect(404);
 
 		expect(message).toEqual(REVIEW_NOT_FOUND);
