@@ -1,16 +1,16 @@
 import { Model } from 'mongoose';
 import { Injectable } from '@nestjs/common';
 import { modelNames } from '../configs/model-names.config';
-import { ProductDocument, ProductModel } from './product.model';
+import { ProductModel } from './product.model';
 import { InjectModel } from '@nestjs/mongoose';
 import { CreateProductDto } from './dto/create-product.dto';
 import { FindProductDto } from './dto/find-product.dto';
-import { ReviewModel } from '../review/review.model';
+import { ReviewDocument } from '../review/review.model';
 
 @Injectable()
 export class ProductService {
 	constructor(
-		@InjectModel(modelNames.product) private readonly productModel: Model<ProductDocument>,
+		@InjectModel(modelNames.product) private readonly productModel: Model<ProductModel>,
 	) {}
 
 	async create(dto: CreateProductDto): Promise<ProductModel> {
@@ -55,12 +55,26 @@ export class ProductService {
 					$addFields: {
 						reviewCount: { $size: '$reviews' },
 						reviewAvg: { $avg: '$reviews.rating' },
+						reviews: {
+							$function: {
+								body: function (reviews: ReviewDocument[]) {
+									reviews.sort(
+										(a, b) =>
+											new Date(b.createdAt as Date).valueOf() -
+											new Date(a.createdAt as Date).valueOf(),
+									);
+									return reviews;
+								},
+								args: ['$reviews'],
+								lang: 'js',
+							},
+						},
 					},
 				},
 			])
 			.exec() as Promise<
 			(ProductModel & {
-				review: ReviewModel[];
+				review: ReviewDocument[];
 				reviewCount: number;
 				reviewAvg: number;
 			})[]
