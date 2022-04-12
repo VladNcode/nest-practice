@@ -1,6 +1,6 @@
 export const modelNames = {
 	review: 'Review',
-	auth: 'Auth',
+	user: 'User',
 	topPage: 'TopPage',
 	product: 'Product',
 };

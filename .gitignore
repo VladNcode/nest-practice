@@ -37,3 +37,4 @@ lerna-debug.log*
 .vscode
 test.js
 .env
+.clinic
