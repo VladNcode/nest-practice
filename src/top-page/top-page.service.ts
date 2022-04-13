@@ -25,24 +25,33 @@ export class TopPageService {
 
 	async findByCategory(firstCategory: TopLevelCategory) {
 		return this.topPageModel
-			.aggregate([
-				{
-					$match: {
-						firstLevelCategory: firstCategory,
-					},
-				},
-				{
-					$group: {
-						_id: {
-							secondCategory: '$secondCategory',
-						},
-						pages: {
-							$push: { alias: '$alias', title: '$title' },
-						},
-					},
-				},
-			])
+			.aggregate()
+			.match({ firstLevelCategory: firstCategory })
+			.group({
+				_id: { secondCategory: '$secondCategory' },
+				pages: { $push: { alias: '$alias', title: '$title' } },
+			})
 			.exec();
+
+		// return this.topPageModel
+		// 	.aggregate([
+		// 		{
+		// 			$match: {
+		// 				firstLevelCategory: firstCategory,
+		// 			},
+		// 		},
+		// 		{
+		// 			$group: {
+		// 				_id: {
+		// 					secondCategory: '$secondCategory',
+		// 				},
+		// 				pages: {
+		// 					$push: { alias: '$alias', title: '$title' },
+		// 				},
+		// 			},
+		// 		},
+		// 	])
+		// 	.exec();
 	}
 
 	async findByText(text: string) {
