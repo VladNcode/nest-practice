@@ -14,7 +14,6 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt.guard';
 import { IdValidationPipe } from '../pipes/id-validation.pipe';
-import { FindProductDto } from '../product/dto/find-product.dto';
 import { TopPageModelDto } from './dto/create-top-page.dto';
 import { FindTopPageDto } from './dto/find-top-page.dto';
 import { TOP_PAGE_NOT_FOUND } from './top-page.constraints';
@@ -49,9 +48,14 @@ export class TopPageController {
 		return topPage;
 	}
 
+	@Get('textSearch/:text')
+	async textSearch(@Param('text') text: string) {
+		return await this.topPageService.findByText(text);
+	}
+
 	@UseGuards(JwtAuthGuard)
 	@Get(':id')
-	async get(@Param('id', IdValidationPipe) id: string) {
+	async get(@Param('id') id: string) {
 		const topPage = await this.topPageService.findById(id);
 
 		if (!topPage) {

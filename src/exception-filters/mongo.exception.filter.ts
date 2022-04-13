@@ -1,42 +1,67 @@
-import { ArgumentsHost, Catch, ExceptionFilter, HttpStatus } from '@nestjs/common';
-import { MongoError } from 'mongodb';
+import { Catch, ExceptionFilter, ArgumentsHost, HttpStatus, HttpException } from '@nestjs/common';
+import { Response } from 'express';
 
-@Catch(MongoError)
-export class MongoExceptionFilter implements ExceptionFilter {
-	catch(exception: MongoError, host: ArgumentsHost) {
-		const ctx = host.switchToHttp();
-		const response = ctx.getResponse();
-		// const request = ctx.getRequest();
+@Catch()
+export class MongoExceptionsFilter implements ExceptionFilter {
+	catch(exp: any, host: ArgumentsHost) {
+		// console.log(exp);
 
-		let error;
+		const context = host.switchToHttp();
+		const response = context.getResponse<Response>();
 
-		switch (exception.name) {
+		// const request = context.getRequest<Request>();
+		// const validErrors = hasKey && Array.isArray(exp.response.message) ? exp.response.message : [];
+		// const type = hasKey && exp.response.type ? exp.response.type : 'some_thing_went_error';
+
+		const hasKey = Object.keys(exp).length > 0 && exp.hasOwnProperty('response') ? true : false;
+		const isHttpInstance = exp instanceof HttpException ? true : false;
+		const error = hasKey ? exp.response.error : exp;
+		let statusCode = isHttpInstance ? exp.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR;
+		let message = isHttpInstance ? exp.message : 'Oops Something went wrong!';
+		let res;
+
+		switch (exp.name) {
 			case 'DocumentNotFoundError': {
-				error = {
-					statusCode: HttpStatus.NOT_FOUND,
-					error: 'Not Found',
+				res = {
+					statusCode,
+					error,
+					message,
 				};
 
+				response.status(statusCode).json(res);
 				break;
 			}
 			case 'MongoServerError': {
-				const err = exception.message.match(/{.*}/);
+				statusCode = HttpStatus.BAD_REQUEST;
+				const duplField = error.keyValue;
+				message = `Duplicate values in fields: ${JSON.stringify(duplField)
+					.replace(/"/g, '')
+					.replace(/{/g, '{ ')
+					.replace(/}/g, ' }')
+					.replace(/:/g, ': ')
+					.replace(/,/g, ', ')}`;
 
-				error = {
-					statusCode: HttpStatus.BAD_REQUEST,
-					error: `Duplicate key error: ${err}`,
+				res = {
+					statusCode,
+					message,
 				};
+
+				response.status(statusCode).json(res);
+				break;
+			}
+			case 'CastError': {
+				const id = (error.message.match(/"(\w*)"/) as string[])[1];
+				statusCode = HttpStatus.NOT_FOUND;
+
+				res = {
+					statusCode,
+					message: `Invalid ObjectId: ${id}`,
+				};
+
+				response.status(statusCode).json(res);
 				break;
 			}
 			// case 'MongooseError': { break; } // general Mongoose error
-			case 'CastError': {
-				error = {
-					statusCode: HttpStatus.BAD_REQUEST,
-					error: `${exception.message}`,
-				};
-
-				break;
-			}
 			// case 'DisconnectedError': { break; }
 			// case 'DivergentArrayError': { break; }
 			// case 'MissingSchemaError': { break; }
@@ -49,14 +74,25 @@ export class MongoExceptionFilter implements ExceptionFilter {
 			// case 'StrictModeError': { break; }
 			// case 'VersionError': { break; }
 			default: {
-				error = {
-					statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-					error: 'Internal Error',
+				res = {
+					statusCode,
+					error,
+					message,
 				};
+
+				response.status(statusCode).json(res);
 				break;
 			}
 		}
-
-		response.status(error.statusCode).json(error);
 	}
 }
+
+// response.status(statusCode).json({
+// 	message,
+// 	type,
+// 	validationErrors: validErrors,
+// 	statusCode,
+// 	error,
+// 	timestamp: new Date().toISOString(),
+// 	path: request.url,
+// });
