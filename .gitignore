@@ -37,5 +37,7 @@ lerna-debug.log*
 .vscode
 test.js
 .env
+.development.env
 .clinic
 mongo-data
+uploads

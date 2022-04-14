@@ -6,10 +6,13 @@ import { ProductModule } from './product/product.module';
 import { ReviewModule } from './review/review.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { getMongoConfig } from './configs/mongo.config';
+import { FilesModule } from './files/files.module';
 
 @Module({
 	imports: [
-		ConfigModule.forRoot(),
+		ConfigModule.forRoot({
+			envFilePath: `${process.env.NODE_ENV === 'dev' ? '.development.env' : '.env'}`,
+		}),
 		MongooseModule.forRootAsync({
 			imports: [ConfigModule],
 			inject: [ConfigService],
@@ -19,6 +22,7 @@ import { getMongoConfig } from './configs/mongo.config';
 		TopPageModule,
 		ProductModule,
 		ReviewModule,
+		FilesModule,
 	],
 	controllers: [],
 	providers: [],
