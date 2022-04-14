@@ -1,0 +1,21 @@
+version: '3.1'
+services:
+  nest:
+    image: vladncode/nest
+    container_name: nest
+    restart: always
+    ports:
+      - 3000:3000
+    volumes:
+      - ./.env:/app/.env
+  mongo:
+    image: mongo
+    container_name: mongosh
+    restart: always
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=test
+    ports:
+      - 27019:27017
+    volumes:
+      - ./mongo-data:/data/db
