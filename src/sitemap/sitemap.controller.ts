@@ -1,10 +1,9 @@
-import { Controller, Get, Header } from '@nestjs/common';
+import { Controller, Get, Header, Headers } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { TopPageService } from '../top-page/top-page.service';
 import { addDays, formatISO } from 'date-fns';
 import { Builder } from 'xml2js';
 import { CATEGORY_URL } from './sitemap.constraints';
-import { app } from '../main';
 
 @Controller('sitemap')
 export class SitemapController {
@@ -18,8 +17,8 @@ export class SitemapController {
 
 	@Get('xml')
 	@Header('content-type', 'text/xml')
-	async sitemap() {
-		this.domain = this.configService.get('DOMAIN') ?? (await app.getUrl());
+	async sitemap(@Headers('host') host: string) {
+		this.domain = this.configService.get('DOMAIN') ?? `http://${host}`;
 
 		let res = [
 			{
@@ -35,10 +34,6 @@ export class SitemapController {
 				priority: '1.0',
 			},
 		];
-
-		// const routePath = Reflect.getMetadata(PATH_METADATA, app);
-
-		console.log();
 
 		const pages = await this.topPageService.findAll();
 
