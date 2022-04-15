@@ -8,6 +8,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { getMongoConfig } from './configs/mongo.config';
 import { FilesModule } from './files/files.module';
 import { SitemapModule } from './sitemap/sitemap.module';
+import { TelegramModule } from './telegram/telegram.module';
+import { getTelegramConfig } from './configs/telegram.config';
 
 @Module({
 	imports: [
@@ -19,12 +21,18 @@ import { SitemapModule } from './sitemap/sitemap.module';
 			inject: [ConfigService],
 			useFactory: getMongoConfig,
 		}),
+		TelegramModule.forRootAsync({
+			imports: [ConfigModule],
+			inject: [ConfigService],
+			useFactory: getTelegramConfig,
+		}),
 		AuthModule,
 		TopPageModule,
 		ProductModule,
 		ReviewModule,
 		FilesModule,
 		SitemapModule,
+		TelegramModule,
 	],
 	controllers: [],
 	providers: [],
