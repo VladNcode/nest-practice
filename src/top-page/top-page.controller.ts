@@ -13,16 +13,21 @@ import {
 	ValidationPipe,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt.guard';
+import { HhService } from '../hh/hh.service';
 import { IdValidationPipe } from '../pipes/id-validation.pipe';
 import { TopPageModelDto } from './dto/create-top-page.dto';
 import { FindTopPageDto } from './dto/find-top-page.dto';
 import { TOP_PAGE_NOT_FOUND } from './top-page.constraints';
 import { TopPageModel } from './top-page.model';
 import { TopPageService } from './top-page.service';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Controller('top-page')
 export class TopPageController {
-	constructor(private readonly topPageService: TopPageService) {}
+	constructor(
+		private readonly topPageService: TopPageService,
+		private readonly hhService: HhService,
+	) {}
 
 	@UseGuards(JwtAuthGuard)
 	@UsePipes(new ValidationPipe())
@@ -55,7 +60,7 @@ export class TopPageController {
 
 	@UseGuards(JwtAuthGuard)
 	@Get(':id')
-	async get(@Param('id') id: string) {
+	async getById(@Param('id') id: string) {
 		const topPage = await this.topPageService.findById(id);
 
 		if (!topPage) {
@@ -63,16 +68,6 @@ export class TopPageController {
 		}
 
 		return topPage;
-	}
-
-	@UseGuards(JwtAuthGuard)
-	@Delete(':id')
-	async delete(@Param('id', IdValidationPipe) id: string) {
-		const deletedTopPage = await this.topPageService.deleteById(id);
-
-		if (!deletedTopPage) {
-			throw new NotFoundException(TOP_PAGE_NOT_FOUND);
-		}
 	}
 
 	@UseGuards(JwtAuthGuard)
@@ -85,5 +80,44 @@ export class TopPageController {
 		}
 
 		return updatedTopPage;
+	}
+
+	@UseGuards(JwtAuthGuard)
+	@Delete(':id')
+	async delete(@Param('id', IdValidationPipe) id: string) {
+		const deletedTopPage = await this.topPageService.deleteById(id);
+
+		if (!deletedTopPage) {
+			throw new NotFoundException(TOP_PAGE_NOT_FOUND);
+		}
+	}
+
+	@Cron(CronExpression.EVERY_WEEK)
+	@Post('test')
+	async test() {
+		const data = await this.topPageService.findForHhUpdate(new Date());
+
+		const sleep = function (seconds: number) {
+			return new Promise<void>(resolve => {
+				setTimeout(() => {
+					resolve();
+				}, seconds * 1000);
+			});
+		};
+
+		for (const page of data) {
+			const hhData = await this.hhService.getData(page.category);
+			console.log(hhData);
+			await sleep(3);
+			page.hh = {
+				count: 1,
+				juniorSalary: hhData?.userId || 500,
+				middleSalary: 2000,
+				seniorSalary: 5000,
+			};
+			console.log(page);
+
+			await this.topPageService.updateById(page._id, page);
+		}
 	}
 }
